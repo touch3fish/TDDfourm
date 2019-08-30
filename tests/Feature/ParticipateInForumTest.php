@@ -18,8 +18,9 @@ class ParticipateInForumTest extends TestCase
 
     public function test_unauthenticated_user_may_no_add_replies()
     {
-        $this->expectException('Illuminate\Auth\AuthenticationException');
-        $this->post('threads/1/replies',[]);
+        $this->withExceptionHandling()
+            ->post('threads/some-channel/1/replies',[])
+            ->assertRedirect('/login');
 //        $thread = factory('App\Thread')->create();
 //
 //        $reply = factory('App\Reply')->create();
@@ -29,12 +30,12 @@ class ParticipateInForumTest extends TestCase
     public function test_an_authenticated_user_may_participate_in_forum_threads()
     {
         //给我们一个有权限的用户
-        $this->be($user = factory('App\User')->create());//已登录用户
-//        $user = factory('App\User')->create();//为登录用户
+        $this->signIn();
         //并且有一个存在的话题
-        $thread = factory('App\Thread')->create();
+        $thread = create('App\Thread');
         //当有用户在这个话题回复时
-        $reply = factory('App\Reply')->make();
+        $reply = make('App\Reply');
+//        dd($thread->path().'/replies');
         $this->post($thread->path().'/replies',$reply->toArray());
         //他们可以查看页面
         $this->get($thread->path())
