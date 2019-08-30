@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Channel;
+use App\Filters\ThreadsFilters;
 use App\Thread;
 use Illuminate\Http\Request;
 
@@ -17,10 +19,28 @@ class ThreadsController extends Controller
         $this->middleware('auth')->except(['index','show']);//白名单
     }
 
-    public function index()
+    public function index(Channel $channel,ThreadsFilters $filters)
     {
-        $threads = Thread::latest()->get();
+        $threads = $this->getThreads($channel,$filters);
+
         return view('threads.index',compact('threads'));
+    }
+
+    /**
+     * 获取主题
+     * @param Channel $channel
+     * @return \Illuminate\Database\Eloquent\Collection|\Illuminate\Database\Query\Builder|\Illuminate\Support\Collection|static|static[]
+     */
+    protected function getThreads(Channel $channel,ThreadsFilters $filters)
+    {
+        $threads = Thread::latest()->filter($filters);
+
+        if($channel->exists) {
+            $threads->where('channel_id',$channel->id);
+        }
+
+        $threads = $threads->get();
+        return $threads;
     }
 
     /**
@@ -41,6 +61,12 @@ class ThreadsController extends Controller
      */
     public function store(Request $request)
     {
+        $this->validate($request,[
+           'title' => 'required',
+            'body' => 'required',
+            'channel_id' => 'required|exists:channels,id'
+        ]);
+
         $thread = Thread::create([
            'user_id' => auth()->id(),
            'channel_id' => request('channel_id'),
