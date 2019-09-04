@@ -71,4 +71,22 @@ class ReadThreadsTest extends TestCase
             ->assertSee($threadByNoNo1->title)
             ->assertDontSee($threadNotByNoNo1->title);
     }
+
+    public function test_a_user_can_filter_threads_by_popularity()
+    {
+        //三个话题
+        //分别有两个回复，3个回复，0个回复
+        $threadWithTwoReplies = create('App\Thread');
+        create('App\Reply',['thread_id'=>$threadWithTwoReplies->id],2);
+
+        $threadWithThreeReplies = create('App\Thread');
+        create('App\Reply',['thread_id'=>$threadWithThreeReplies->id],3);
+
+        //筛选话题通过回复数
+        $response = $this->getJson('threads?popularity=1')->json();
+
+        //返回最多回复数
+
+        $this->assertEquals([3,2,0],array_column($response,'replies_count'));
+    }
 }
