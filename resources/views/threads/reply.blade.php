@@ -12,7 +12,7 @@
                     {{ csrf_field() }}
 
                     <button type="submit" class="btn btn-default" {{ $reply->isFavorited() ? 'disabled' : '' }}>
-                        {{ $reply->favorites()->count() }} {{ str_plural('点赞',$reply->favorites()->count()) }}
+                        {{ $reply->favorites_count }} {{'赞', $reply->favorites_count }}
                     </button>
                 </form>
             </div>
